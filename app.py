@@ -10,7 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# 2. 커스텀 CSS (에러 방지를 위해 문자열 처리를 더 깔끔하게 수정했습니다)
+# 2. 커스텀 CSS (옵션 명칭 수정 완료)
 custom_css = """
     <style>
     .main { background-color: #0c1a2e; }
@@ -19,7 +19,8 @@ custom_css = """
     div.stProgress > div > div > div > div { background-color: #ffe135; }
     </style>
 """
-st.markdown(custom_css, unsafe_allow_safe_html=True)
+# 여기서 unsafe_allow_html=True 로 수정했습니다!
+st.markdown(custom_css, unsafe_allow_html=True)
 
 # --- 사이드바 ---
 with st.sidebar:
@@ -33,7 +34,7 @@ with st.sidebar:
 st.title("Aging Target Protein: In-Silico Discovery")
 st.subheader("AI기반 차세대 노화 억제 및 비항생제성 화합물 발굴 플랫폼")
 
-# --- 메인 섹션: 3대 지표 (에러 방지를 위해 간단한 구조로 변경) ---
+# --- 메인 섹션: 3대 지표 ---
 col1, col2, col3 = st.columns(3)
 col1.metric("Binding Affinity (Avg)", "98.2%", "Top 1%")
 col2.metric("Safety Pass Rate", "Pass", "Toxic Free")
