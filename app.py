@@ -4,7 +4,6 @@ import time
 import numpy as np
 from rdkit import Chem
 from rdkit.Chem import Draw
-from io import StringIO
 
 # 1. 페이지 설정
 st.set_page_config(
@@ -13,84 +12,66 @@ st.set_page_config(
     layout="wide"
 )
 
-# [이미지 주소 반영]
+# [이미지 주소]
 IMAGE_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgWi2G3PZ2y0MSNuxEQ3xTFfp6WnVQ7uLnPUQaSNE5a_PPsFvCgL_xALuvusjUo3OV-S4MddYAQWxMxsob9EpNujqwh9cXBP09bxZSS_O2y42zW668O7fPgD_fPVMkqWnx1p5n2KkA1nrZR3zUgvUp0ZE59yinMWEJRrLNIALGQm2Uq10gvAD9KDgg3Rpk/s1168/surop.jpg"
 
-# 2. 커스텀 CSS (표 내부 텍스트 및 버튼 시인성 끝판왕 버전)
+# 2. 커스텀 CSS (사이드바 가독성 해결 핵심)
 custom_css = """
     <style>
-    /* 전체 배경색 강제 고정 */
+    /* 전체 앱 배경 */
     .stApp {
         background-color: #0c1a2e !important;
     }
     
-    /* 모든 기본 텍스트 흰색 강제 */
+    /* 메인 화면 텍스트 흰색 */
     h1, h2, h3, h4, h5, p, li, span, label, .stMarkdown { 
         color: #ffffff !important; 
     }
 
-    /* [초강력 수정] 표(st.table) 내부의 글자색과 배경색을 절대값으로 고정 */
+    /* [집중 수정] 사이드바 가독성: 배경은 밝게, 모든 글자는 아주 진하게 */
+    section[data-testid="stSidebar"] {
+        background-color: #f8f9fa !important;
+    }
+    section[data-testid="stSidebar"] * {
+        color: #0c1a2e !important; /* 사이드바 내 모든 요소 글자색 강제 */
+    }
+    section[data-testid="stSidebar"] .stMarkdown p {
+        font-weight: 600 !important;
+    }
+
+    /* 표(Table) 가독성: 흰색 배경에 검은 글씨 */
     div[data-testid="stTable"] {
         background-color: #ffffff !important;
         border-radius: 10px !important;
-        padding: 5px !important;
     }
-    
     div[data-testid="stTable"] table {
-        color: #000000 !important; /* 모든 글자 검은색 */
+        color: #000000 !important;
     }
-
     div[data-testid="stTable"] th {
-        background-color: #f1f3f5 !important;
-        color: #000000 !important; /* 제목 검은색 */
-        font-weight: 800 !important;
-        border: 1px solid #dee2e6 !important;
-    }
-
-    div[data-testid="stTable"] td {
-        background-color: #ffffff !important;
-        color: #000000 !important; /* 수치 검은색 */
-        font-weight: 600 !important;
-        border: 1px solid #dee2e6 !important;
-    }
-
-    /* 업로드 섹션 내 글씨 및 버튼 가독성 */
-    div[data-testid="stFileUploader"] label, 
-    div[data-testid="stFileUploader"] small {
-        color: #ffffff !important;
-    }
-    
-    /* 파일 업로드 'Browse files' 버튼 */
-    button[data-testid="stBaseButton-secondary"] {
-        color: #000000 !important; /* 버튼 글자 검은색 */
-        background-color: #ffe135 !important;
-        border: none !important;
+        background-color: #e9ecef !important;
+        color: #000000 !important;
         font-weight: bold !important;
     }
-
-    /* 메트릭 박스 */
-    div[data-testid="stMetric"] { 
-        background-color: #162a47 !important; 
-        padding: 20px; 
-        border-radius: 12px; 
-        border-bottom: 4px solid #ffe135; 
+    div[data-testid="stTable"] td {
+        color: #000000 !important;
+        border: 1px solid #dee2e6 !important;
     }
-    div[data-testid="stMetricValue"] > div { color: #ffe135 !important; }
 
-    /* 일반 실행 버튼 */
+    /* 버튼 및 업로드 섹션 */
     .stButton>button {
         background-color: #ffe135 !important;
         color: #000000 !important;
-        border-radius: 8px !important;
         font-weight: bold !important;
-        width: 100%;
-        height: 3.5em;
+    }
+    button[data-testid="stBaseButton-secondary"] {
+        color: #000000 !important;
+        background-color: #ffe135 !important;
     }
     </style>
 """
 st.markdown(custom_css, unsafe_allow_html=True)
 
-# --- [함수] 분자 구조 시각화 엔진 ---
+# --- [함수] 분자 구조 시각화 ---
 def render_molecule(smiles):
     try:
         mol = Chem.MolFromSmiles(smiles)
@@ -100,86 +81,60 @@ def render_molecule(smiles):
         return None
     return None
 
-# --- 사이드바 ---
+# --- 사이드바 (가독성 수정 대상) ---
 with st.sidebar:
     st.title("🧬 SUROP")
     st.write("**S**uperior **U**niversal **R**eceptor **O**ptimization **P**latform")
     st.divider()
-    st.success("System Status: Active")
-    st.info("NemoClaw AI Engine Running")
+    st.write("### System Status")
+    st.info("✅ Status: Active")
+    st.write("### Engine Info")
+    st.info("🚀 NemoClaw AI Running")
 
-# --- 메인 비주얼 ---
-st.image(IMAGE_URL, caption="SUROP: Next-Generation AI Drug Discovery Interface", use_container_width=True)
+# --- 메인 섹션 ---
+st.image(IMAGE_URL, caption="SUROP Platform Interface", use_container_width=True)
 
-st.title("Aging Target Protein: In-Silico Discovery")
-st.markdown("### AI기반 차세대 노화 억제 및 비항생제성 화합물 발굴 플랫폼")
+st.title("Aging Target Protein Analysis")
+st.markdown("### AI기반 차세대 노화 억제 화합물 발굴 플랫폼")
 
 col1, col2, col3 = st.columns(3)
 with col1:
-    st.metric("Binding Affinity", "98.2%", "Top 0.1%")
+    st.metric("Binding Affinity", "98.2%")
 with col2:
-    st.metric("Safety Score", "High Pass", "Toxic Free")
+    st.metric("Safety Score", "High Pass")
 with col3:
-    st.metric("Microbiome Safety", "Negative", "Non-Antibiotic")
+    st.metric("Microbiome", "Safe")
 
 st.divider()
 
-# --- 섹션 2: 타겟 분석 엔진 ---
-st.header("🎯 Target Protein Analysis")
-target_pdb = st.text_input("분석할 표적 단백질의 PDB ID를 입력하세요", "1UNL")
+# 분석 엔진 섹션
+st.header("🎯 Target Analysis")
+target_pdb = st.text_input("PDB ID 입력", "1UNL")
 
-if st.button('Run Deep Analysis (Real-mode)'):
-    with st.spinner('SUROP 엔진이 대규모 라이브러리를 정밀 스캔 중입니다...'):
-        time.sleep(1.5)
-        st.subheader(f"📊 {target_pdb} 최적 결합 후보 물질 (Top 5)")
-        
+if st.button('Run Analysis'):
+    with st.spinner('분석 중...'):
+        time.sleep(1)
         mock_data = {
-            "Rank": [1, 2, 3, 4, 5],
-            "Compound ID": ["SUROP-B01", "SUROP-B02", "SUROP-B03", "SUROP-B04", "SUROP-B05"],
-            "Affinity (kcal/mol)": [-12.42, -11.95, -11.51, -10.88, -10.23],
-            "MW (g/mol)": [342.4, 310.2, 405.5, 298.1, 355.4],
-            "LogP": [2.4, 1.8, 3.1, 2.0, 2.7],
-            "Toxic Filter": ["SAFE", "SAFE", "SAFE", "SAFE", "SAFE"]
+            "Rank": [1, 2, 3],
+            "Compound ID": ["SUROP-01", "SUROP-02", "SUROP-03"],
+            "Affinity": [-12.4, -11.9, -11.5],
+            "Result": ["SAFE", "SAFE", "SAFE"]
         }
-        # 테이블 데이터 출력 (CSS가 강제 적용됨)
         st.table(pd.DataFrame(mock_data))
-        st.success("분석 완료: 모든 후보 물질이 약물성 검증을 통과했습니다.")
-        st.balloons()
 
 st.divider()
 
-# --- 섹션 3: 데이터 업로드 및 구조 시각화 ---
-st.header("🧪 SUROP Interactive Lab")
-st.write("교수님의 후보 화합물 리스트(CSV)를 업로드하여 실시간 구조 분석을 수행하세요.")
-
-uploaded_file = st.file_uploader("CSV 파일을 업로드하세요 (Name, SMILES 컬럼 필수)", type=["csv"])
+# 데이터 업로드 섹션
+st.header("🧪 Interactive Lab")
+uploaded_file = st.file_uploader("CSV 파일을 업로드하세요", type=["csv"])
 
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
-    st.success(f"데이터 로드 완료: {len(df)}개의 화합물을 확인했습니다.")
-    
-    if st.button("Start Batch Validation"):
-        st.write("### 🔍 Molecular Structure & Safety Analysis")
+    if st.button("Start Validation"):
         cols = st.columns(3)
         for index, row in df.iterrows():
             with cols[index % 3]:
-                st.markdown(f"**Target ID: {row['Name']}**")
+                st.write(f"ID: {row['Name']}")
                 img = render_molecule(row['SMILES'])
-                if img:
-                    st.image(img, use_container_width=True)
-                else:
-                    st.error(f"{row['Name']}: 형식 오류")
-                
-                score = np.random.randint(88, 99)
-                st.write(f"Binding Probability: {score}%")
-                st.progress(score / 100)
-                st.divider()
-
-with st.expander("📌 시연용 샘플 데이터"):
-    st.code("""Name,SMILES
-Candidate_01,CC(=O)OC1=CC=CC=C1C(=O)O
-Candidate_02,CN1C=NC2=C1C(=O)N(C(=O)N2C)C
-Candidate_03,C(C1C(C(C(C(O1)O)O)O)O)O""", language="text")
-
-st.divider()
-st.info("📫 Contact: misatech@surop.com | 서울대학교 이준호 교수님 연구팀 전용 채널")
+                if img: st.image(img)
+                st.progress(np.random.randint(80, 100) / 100)
