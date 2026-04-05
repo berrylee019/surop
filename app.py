@@ -16,52 +16,56 @@ st.set_page_config(
 # [이미지 주소 반영]
 IMAGE_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgWi2G3PZ2y0MSNuxEQ3xTFfp6WnVQ7uLnPUQaSNE5a_PPsFvCgL_xALuvusjUo3OV-S4MddYAQWxMxsob9EpNujqwh9cXBP09bxZSS_O2y42zW668O7fPgD_fPVMkqWnx1p5n2KkA1nrZR3zUgvUp0ZE59yinMWEJRrLNIALGQm2Uq10gvAD9KDgg3Rpk/s1168/surop.jpg"
 
-# 2. 커스텀 CSS (표 내부 글자색 강제 고정 및 모든 가독성 문제 해결)
+# 2. 커스텀 CSS (표 내부 텍스트 및 버튼 시인성 끝판왕 버전)
 custom_css = """
     <style>
-    /* 전체 앱 배경: 짙은 네이비 */
+    /* 전체 배경색 강제 고정 */
     .stApp {
         background-color: #0c1a2e !important;
     }
     
-    /* 일반 텍스트 흰색 고정 */
+    /* 모든 기본 텍스트 흰색 강제 */
     h1, h2, h3, h4, h5, p, li, span, label, .stMarkdown { 
         color: #ffffff !important; 
     }
+
+    /* [초강력 수정] 표(st.table) 내부의 글자색과 배경색을 절대값으로 고정 */
+    div[data-testid="stTable"] {
+        background-color: #ffffff !important;
+        border-radius: 10px !important;
+        padding: 5px !important;
+    }
     
-    /* [긴급 수정] 표(Table) 가독성: 셀 안의 모든 글자를 검은색으로 강제 주입 */
     div[data-testid="stTable"] table {
-        background-color: #ffffff !important;
-        color: #000000 !important;
-        border-collapse: collapse !important;
-        width: 100% !important;
-    }
-    
-    div[data-testid="stTable"] th {
-        background-color: #f0f2f6 !important;
-        color: #000000 !important; /* 헤더 글자 검은색 */
-        font-weight: bold !important;
-        border: 1px solid #cccccc !important;
-    }
-    
-    div[data-testid="stTable"] td {
-        background-color: #ffffff !important;
-        color: #000000 !important; /* 데이터 글자 검은색 */
-        border: 1px solid #cccccc !important;
-        font-weight: 500 !important;
+        color: #000000 !important; /* 모든 글자 검은색 */
     }
 
-    /* 업로드 섹션 스타일 */
-    div[data-testid="stFileUploader"] section {
-        background-color: #162a47 !important;
-        border: 1px dashed #ffe135 !important;
+    div[data-testid="stTable"] th {
+        background-color: #f1f3f5 !important;
+        color: #000000 !important; /* 제목 검은색 */
+        font-weight: 800 !important;
+        border: 1px solid #dee2e6 !important;
+    }
+
+    div[data-testid="stTable"] td {
+        background-color: #ffffff !important;
+        color: #000000 !important; /* 수치 검은색 */
+        font-weight: 600 !important;
+        border: 1px solid #dee2e6 !important;
+    }
+
+    /* 업로드 섹션 내 글씨 및 버튼 가독성 */
+    div[data-testid="stFileUploader"] label, 
+    div[data-testid="stFileUploader"] small {
+        color: #ffffff !important;
     }
     
-    /* 업로드 버튼 내부 'Browse files' 글자색 */
+    /* 파일 업로드 'Browse files' 버튼 */
     button[data-testid="stBaseButton-secondary"] {
-        color: #000000 !important;
+        color: #000000 !important; /* 버튼 글자 검은색 */
         background-color: #ffe135 !important;
         border: none !important;
+        font-weight: bold !important;
     }
 
     /* 메트릭 박스 */
@@ -72,8 +76,8 @@ custom_css = """
         border-bottom: 4px solid #ffe135; 
     }
     div[data-testid="stMetricValue"] > div { color: #ffe135 !important; }
-    
-    /* 일반 버튼 스타일 */
+
+    /* 일반 실행 버튼 */
     .stButton>button {
         background-color: #ffe135 !important;
         color: #000000 !important;
@@ -137,10 +141,8 @@ if st.button('Run Deep Analysis (Real-mode)'):
             "LogP": [2.4, 1.8, 3.1, 2.0, 2.7],
             "Toxic Filter": ["SAFE", "SAFE", "SAFE", "SAFE", "SAFE"]
         }
-        # 데이터프레임 생성 및 표 출력
-        df_result = pd.DataFrame(mock_data)
-        st.table(df_result)
-        
+        # 테이블 데이터 출력 (CSS가 강제 적용됨)
+        st.table(pd.DataFrame(mock_data))
         st.success("분석 완료: 모든 후보 물질이 약물성 검증을 통과했습니다.")
         st.balloons()
 
