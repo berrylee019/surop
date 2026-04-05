@@ -16,28 +16,60 @@ st.set_page_config(
 # [이미지 주소 반영 완료]
 IMAGE_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgWi2G3PZ2y0MSNuxEQ3xTFfp6WnVQ7uLnPUQaSNE5a_PPsFvCgL_xALuvusjUo3OV-S4MddYAQWxMxsob9EpNujqwh9cXBP09bxZSS_O2y42zW668O7fPgD_fPVMkqWnx1p5n2KkA1nrZR3zUgvUp0ZE59yinMWEJRrLNIALGQm2Uq10gvAD9KDgg3Rpk/s1168/surop.jpg"
 
-# 2. 커스텀 CSS (가독성 최적화)
+# 2. 커스텀 CSS (가독성 보완 및 테이블 시각화 최적화)
 custom_css = """
     <style>
+    /* 전체 배경색 및 기본 텍스트 설정 */
     .main { background-color: #0c1a2e; color: #ffffff; }
-    h1, h2, h3 { color: #ffffff !important; font-weight: 700; }
+    
+    /* 헤더 및 마크다운 텍스트 색상 강제 지정 */
+    h1, h2, h3, p, span, label { color: #ffffff !important; font-weight: 700; }
+    
+    /* 메트릭 박스 스타일 */
     div[data-testid="stMetric"] { 
         background-color: #162a47; 
         padding: 20px; 
         border-radius: 12px; 
         border-bottom: 4px solid #ffe135; 
     }
-    .stMarkdown { color: #e0e0e0; }
+    
+    /* 프로그레스 바 컬러 */
     div.stProgress > div > div > div > div { background-color: #ffe135; }
+    
+    /* 버튼 스타일 */
     .stButton>button {
         background-color: #ffe135;
         color: #0c1a2e;
         border-radius: 8px;
         font-weight: bold;
         width: 100%;
+        border: none;
     }
-    /* 테이블 스타일 조정 */
-    .stTable { background-color: #162a47; border-radius: 10px; }
+    .stButton>button:hover {
+        background-color: #e6cb30;
+        color: #0c1a2e;
+    }
+
+    /* [중요] 테이블 가독성 보완: 배경은 밝게, 글자는 어둡게 하여 선명도 극대화 */
+    .stTable { 
+        background-color: #ffffff !important; 
+        border-radius: 10px; 
+        overflow: hidden;
+    }
+    .stTable th {
+        background-color: #eeeeee !important;
+        color: #0c1a2e !important;
+        text-align: center !important;
+    }
+    .stTable td {
+        color: #0c1a2e !important;
+        background-color: #ffffff !important;
+        text-align: center !important;
+        border-bottom: 1px solid #dddddd !important;
+    }
+    
+    /* 사이드바 텍스트 색상 */
+    section[data-testid="stSidebar"] .stMarkdown { color: #ffffff; }
     </style>
 """
 st.markdown(custom_css, unsafe_allow_html=True)
@@ -91,6 +123,7 @@ if st.button('Run Deep Analysis (Real-mode)'):
         time.sleep(1.5)
         st.subheader(f"✅ Screening Results for {target_pdb}")
         
+        # 분석 수치 데이터 (시뮬레이션 데이터)
         mock_data = {
             "Rank": [1, 2, 3, 4, 5],
             "Compound ID": ["SUROP-B01", "SUROP-B02", "SUROP-B03", "SUROP-B04", "SUROP-B05"],
@@ -99,6 +132,7 @@ if st.button('Run Deep Analysis (Real-mode)'):
             "LogP": [2.4, 1.8, 3.1, 2.0, 2.7],
             "Toxic Filter": ["PASS", "PASS", "PASS", "PASS", "PASS"]
         }
+        # 테이블 가독성을 위해 흰색 배경의 표로 출력
         st.table(pd.DataFrame(mock_data))
         st.success("Lipinski's Rule of Five 충족 및 비항생제성(Non-antibiotic) 검증 완료")
         st.balloons()
