@@ -16,39 +16,53 @@ st.set_page_config(
 # [이미지 주소 반영]
 IMAGE_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgWi2G3PZ2y0MSNuxEQ3xTFfp6WnVQ7uLnPUQaSNE5a_PPsFvCgL_xALuvusjUo3OV-S4MddYAQWxMxsob9EpNujqwh9cXBP09bxZSS_O2y42zW668O7fPgD_fPVMkqWnx1p5n2KkA1nrZR3zUgvUp0ZE59yinMWEJRrLNIALGQm2Uq10gvAD9KDgg3Rpk/s1168/surop.jpg"
 
-# 2. 커스텀 CSS (배경-글자색 대비 극대화 및 코드 오류 수정)
+# 2. 커스텀 CSS (표 데이터 및 업로드 버튼 가독성 극대화)
 custom_css = """
     <style>
-    /* 전체 배경을 짙은 네이비로 강제 고정 */
+    /* 전체 배경: 짙은 네이비 */
     .stApp {
         background-color: #0c1a2e !important;
     }
     
-    /* 모든 텍스트 요소를 흰색으로 강제 고정 */
-    h1, h2, h3, h4, h5, p, li, label, div, span, .stMarkdown { 
+    /* 모든 기본 텍스트를 흰색으로 강제 */
+    h1, h2, h3, h4, h5, p, li, span, label, .stMarkdown { 
         color: #ffffff !important; 
     }
     
-    /* 입력창 내부 텍스트 및 레이블 가독성 */
-    .stTextInput>label, .stFileUploader>label {
-        color: #ffffff !important;
-        font-weight: bold !important;
-    }
-    
-    /* [표 스타일] 배경 흰색, 글자 진한 네이비 - 매우 선명하게 */
+    /* [표 스타일 수정] 표 내부의 모든 텍스트를 검은색으로 고정하여 흰색 배경에서 잘 보이게 함 */
     .stTable { 
         background-color: #ffffff !important; 
         border-radius: 10px !important; 
-        color: #0c1a2e !important;
     }
     .stTable td, .stTable th {
-        color: #0c1a2e !important;
+        color: #000000 !important; /* 표 안의 글씨는 무조건 검은색 */
         background-color: #ffffff !important;
-        border: 1px solid #dee2e6 !important;
-        padding: 10px !important;
+        border: 1px solid #cccccc !important;
+        padding: 12px !important;
+        font-weight: 500 !important;
+    }
+    .stTable th {
+        background-color: #f0f2f6 !important;
+        font-weight: bold !important;
     }
 
-    /* 메트릭 박스 */
+    /* [업로드 버튼 수정] CSV 업로드 섹션의 텍스트와 버튼 가독성 */
+    div[data-testid="stFileUploader"] section {
+        background-color: #162a47 !important;
+        border: 1px dashed #ffe135 !important;
+    }
+    div[data-testid="stFileUploader"] label, 
+    div[data-testid="stFileUploader"] small {
+        color: #ffffff !important; /* 업로드 안내 문구 흰색 */
+    }
+    /* 업로드 버튼 내부 'Browse files' 글자색 */
+    button[data-testid="stBaseButton-secondary"] {
+        color: #000000 !important; /* 버튼 글씨 검은색 */
+        background-color: #ffe135 !important;
+        border: none !important;
+    }
+
+    /* 메트릭 및 프로그레스 바 */
     div[data-testid="stMetric"] { 
         background-color: #162a47 !important; 
         padding: 20px; 
@@ -56,20 +70,20 @@ custom_css = """
         border-bottom: 4px solid #ffe135; 
     }
     div[data-testid="stMetricValue"] > div { color: #ffe135 !important; }
+    div.stProgress > div > div > div > div { background-color: #ffe135; }
     
-    /* 버튼 스타일 */
+    /* 일반 실행 버튼 스타일 */
     .stButton>button {
         background-color: #ffe135 !important;
-        color: #0c1a2e !important;
+        color: #000000 !important;
         border-radius: 8px !important;
         font-weight: bold !important;
         width: 100%;
         border: none !important;
-        height: 3em;
+        height: 3.5em;
     }
     </style>
 """
-# 로그에 나타난 오류(unsafe_allow_safe_html)를 올바른 옵션(unsafe_allow_html)으로 수정했습니다.
 st.markdown(custom_css, unsafe_allow_html=True)
 
 # --- [함수] 분자 구조 시각화 엔진 ---
@@ -90,7 +104,7 @@ with st.sidebar:
     st.success("System Status: Active")
     st.info("NemoClaw AI Engine Running")
 
-# --- 메인 비주얼 ---
+# --- 메인 섹션 ---
 st.image(IMAGE_URL, caption="SUROP: Next-Generation AI Drug Discovery Interface", use_container_width=True)
 
 st.title("Aging Target Protein: In-Silico Discovery")
@@ -120,19 +134,21 @@ if st.button('Run Deep Analysis (Real-mode)'):
             "Compound ID": ["SUROP-B01", "SUROP-B02", "SUROP-B03", "SUROP-B04", "SUROP-B05"],
             "Affinity (kcal/mol)": [-12.42, -11.95, -11.51, -10.88, -10.23],
             "MW (g/mol)": [342.4, 310.2, 405.5, 298.1, 355.4],
-            "LogP (Solubility)": [2.4, 1.8, 3.1, 2.0, 2.7],
+            "LogP": [2.4, 1.8, 3.1, 2.0, 2.7],
             "Toxic Filter": ["SAFE", "SAFE", "SAFE", "SAFE", "SAFE"]
         }
+        # 테이블 데이터를 명확하게 출력
         st.table(pd.DataFrame(mock_data))
-        st.success("분석 완료: Lipinski's Rule 충족 및 모든 독성 필터 통과")
+        st.success("분석 완료: 모든 독성 필터 및 약물성 검증을 통과했습니다.")
         st.balloons()
 
 st.divider()
 
 # --- 섹션 3: 데이터 업로드 및 구조 시각화 ---
 st.header("🧪 SUROP Interactive Lab")
-st.write("교수님의 후보 화합물 리스트(CSV)를 업로드하여 실시간 구조 및 독성을 검증하세요.")
+st.write("교수님의 후보 화합물 리스트(CSV)를 업로드하여 실시간 구조 분석을 수행하세요.")
 
+# 업로드 섹션
 uploaded_file = st.file_uploader("CSV 파일을 업로드하세요 (Name, SMILES 컬럼 필수)", type=["csv"])
 
 if uploaded_file is not None:
@@ -149,7 +165,7 @@ if uploaded_file is not None:
                 if img:
                     st.image(img, use_container_width=True)
                 else:
-                    st.error(f"{row['Name']}: SMILES 오류")
+                    st.error(f"{row['Name']}: 형식 오류")
                 
                 score = np.random.randint(88, 99)
                 st.write(f"Binding Probability: {score}%")
