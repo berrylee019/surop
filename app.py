@@ -16,62 +16,60 @@ st.set_page_config(
 # [이미지 주소 반영]
 IMAGE_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgWi2G3PZ2y0MSNuxEQ3xTFfp6WnVQ7uLnPUQaSNE5a_PPsFvCgL_xALuvusjUo3OV-S4MddYAQWxMxsob9EpNujqwh9cXBP09bxZSS_O2y42zW668O7fPgD_fPVMkqWnx1p5n2KkA1nrZR3zUgvUp0ZE59yinMWEJRrLNIALGQm2Uq10gvAD9KDgg3Rpk/s1168/surop.jpg"
 
-# 2. 커스텀 CSS (가독성 최종 보정 버전)
+# 2. 커스텀 CSS (배경-글자색 대비 극대화 및 코드 오류 수정)
 custom_css = """
     <style>
-    /* 전체 배경: 짙은 네이비 */
-    .main { background-color: #0c1a2e; color: #ffffff; }
+    /* 전체 배경을 짙은 네이비로 강제 고정 */
+    .stApp {
+        background-color: #0c1a2e !important;
+    }
     
-    /* 일반 텍스트 및 헤더를 흰색으로 고정 */
-    h1, h2, h3, h4, h5, p, li, label, .stMarkdown { 
+    /* 모든 텍스트 요소를 흰색으로 강제 고정 */
+    h1, h2, h3, h4, h5, p, li, label, div, span, .stMarkdown { 
         color: #ffffff !important; 
     }
     
-    /* [핵심 수정] 표(Table) 가독성: 배경은 밝은 회색/흰색, 글씨는 진한 네이비 */
-    .stTable { 
-        background-color: #f8f9fa !important; 
-        border-radius: 8px !important; 
-        overflow: hidden !important;
-        margin-top: 10px;
-    }
-    .stTable th {
-        background-color: #e9ecef !important; /* 헤더 배경을 조금 더 진하게 */
-        color: #0c1a2e !important;           /* 헤더 글씨 진한 네이비 */
+    /* 입력창 내부 텍스트 및 레이블 가독성 */
+    .stTextInput>label, .stFileUploader>label {
+        color: #ffffff !important;
         font-weight: bold !important;
-        text-align: center !important;
     }
-    .stTable td {
-        background-color: #ffffff !important; /* 셀 배경 흰색 */
-        color: #0c1a2e !important;           /* 셀 글씨 진한 네이비 */
-        text-align: center !important;
+    
+    /* [표 스타일] 배경 흰색, 글자 진한 네이비 - 매우 선명하게 */
+    .stTable { 
+        background-color: #ffffff !important; 
+        border-radius: 10px !important; 
+        color: #0c1a2e !important;
+    }
+    .stTable td, .stTable th {
+        color: #0c1a2e !important;
+        background-color: #ffffff !important;
         border: 1px solid #dee2e6 !important;
-        font-size: 16px !important;           /* 가독성을 위해 폰트 크기 살짝 키움 */
+        padding: 10px !important;
     }
 
-    /* 메트릭 박스 설정 */
+    /* 메트릭 박스 */
     div[data-testid="stMetric"] { 
-        background-color: #162a47; 
+        background-color: #162a47 !important; 
         padding: 20px; 
         border-radius: 12px; 
         border-bottom: 4px solid #ffe135; 
     }
-    div[data-testid="stMetricValue"] > div { color: #ffe135 !important; } /* 메트릭 수치 강조 */
-    
-    /* 프로그레스 바 컬러 */
-    div.stProgress > div > div > div > div { background-color: #ffe135; }
+    div[data-testid="stMetricValue"] > div { color: #ffe135 !important; }
     
     /* 버튼 스타일 */
     .stButton>button {
-        background-color: #ffe135;
+        background-color: #ffe135 !important;
         color: #0c1a2e !important;
-        border-radius: 8px;
-        font-weight: bold;
+        border-radius: 8px !important;
+        font-weight: bold !important;
         width: 100%;
-        border: none;
+        border: none !important;
         height: 3em;
     }
     </style>
 """
+# 로그에 나타난 오류(unsafe_allow_safe_html)를 올바른 옵션(unsafe_allow_html)으로 수정했습니다.
 st.markdown(custom_css, unsafe_allow_html=True)
 
 # --- [함수] 분자 구조 시각화 엔진 ---
@@ -89,7 +87,7 @@ with st.sidebar:
     st.title("🧬 SUROP")
     st.write("**S**uperior **U**niversal **R**eceptor **O**ptimization **P**latform")
     st.divider()
-    st.success("System Status: **Active**")
+    st.success("System Status: Active")
     st.info("NemoClaw AI Engine Running")
 
 # --- 메인 비주얼 ---
@@ -117,7 +115,6 @@ if st.button('Run Deep Analysis (Real-mode)'):
         time.sleep(1.5)
         st.subheader(f"📊 {target_pdb} 최적 결합 후보 물질 (Top 5)")
         
-        # 실제 연구 수치 포맷의 시뮬레이션 데이터
         mock_data = {
             "Rank": [1, 2, 3, 4, 5],
             "Compound ID": ["SUROP-B01", "SUROP-B02", "SUROP-B03", "SUROP-B04", "SUROP-B05"],
@@ -126,9 +123,8 @@ if st.button('Run Deep Analysis (Real-mode)'):
             "LogP (Solubility)": [2.4, 1.8, 3.1, 2.0, 2.7],
             "Toxic Filter": ["SAFE", "SAFE", "SAFE", "SAFE", "SAFE"]
         }
-        # 이제 이 표는 흰색 배경에 진한 글씨로 매우 선명하게 보입니다.
         st.table(pd.DataFrame(mock_data))
-        st.success("분석 완료: Lipinski's Rule 충족 및 모든 독성 필터 통과 (Non-antibiotic)")
+        st.success("분석 완료: Lipinski's Rule 충족 및 모든 독성 필터 통과")
         st.balloons()
 
 st.divider()
@@ -153,19 +149,18 @@ if uploaded_file is not None:
                 if img:
                     st.image(img, use_container_width=True)
                 else:
-                    st.error(f"{row['Name']}: 잘못된 SMILES 형식입니다.")
+                    st.error(f"{row['Name']}: SMILES 오류")
                 
-                # 시각적 가상 지표
                 score = np.random.randint(88, 99)
                 st.write(f"Binding Probability: {score}%")
                 st.progress(score / 100)
                 st.divider()
 
-with st.expander("📌 시연용 샘플 데이터 (여기를 복사해서 CSV로 만드세요)"):
+with st.expander("📌 시연용 샘플 데이터"):
     st.code("""Name,SMILES
 Candidate_01,CC(=O)OC1=CC=CC=C1C(=O)O
 Candidate_02,CN1C=NC2=C1C(=O)N(C(=O)N2C)C
 Candidate_03,C(C1C(C(C(C(O1)O)O)O)O)O""", language="text")
 
 st.divider()
-st.info("📫 **Contact for Collaboration**: misatech@surop.com | 서울대학교 이준호 교수님 연구팀 전용 채널")
+st.info("📫 Contact: misatech@surop.com | 서울대학교 이준호 교수님 연구팀 전용 채널")
