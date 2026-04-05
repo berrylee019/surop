@@ -52,7 +52,7 @@ custom_css = """
 
     /* [중요] 테이블 가독성 보완: 배경은 밝게, 글자는 어둡게 하여 선명도 극대화 */
     .stTable { 
-        background-color: #ffffff !important; 
+        background-color: ##0c1a2e !important; 
         border-radius: 10px; 
         overflow: hidden;
     }
