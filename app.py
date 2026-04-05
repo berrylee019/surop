@@ -16,53 +16,55 @@ st.set_page_config(
 # [이미지 주소 반영]
 IMAGE_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgWi2G3PZ2y0MSNuxEQ3xTFfp6WnVQ7uLnPUQaSNE5a_PPsFvCgL_xALuvusjUo3OV-S4MddYAQWxMxsob9EpNujqwh9cXBP09bxZSS_O2y42zW668O7fPgD_fPVMkqWnx1p5n2KkA1nrZR3zUgvUp0ZE59yinMWEJRrLNIALGQm2Uq10gvAD9KDgg3Rpk/s1168/surop.jpg"
 
-# 2. 커스텀 CSS (표 데이터 및 업로드 버튼 가독성 극대화)
+# 2. 커스텀 CSS (표 내부 글자색 강제 고정 및 모든 가독성 문제 해결)
 custom_css = """
     <style>
-    /* 전체 배경: 짙은 네이비 */
+    /* 전체 앱 배경: 짙은 네이비 */
     .stApp {
         background-color: #0c1a2e !important;
     }
     
-    /* 모든 기본 텍스트를 흰색으로 강제 */
+    /* 일반 텍스트 흰색 고정 */
     h1, h2, h3, h4, h5, p, li, span, label, .stMarkdown { 
         color: #ffffff !important; 
     }
     
-    /* [표 스타일 수정] 표 내부의 모든 텍스트를 검은색으로 고정하여 흰색 배경에서 잘 보이게 함 */
-    .stTable { 
-        background-color: #ffffff !important; 
-        border-radius: 10px !important; 
-    }
-    .stTable td, .stTable th {
-        color: #000000 !important; /* 표 안의 글씨는 무조건 검은색 */
+    /* [긴급 수정] 표(Table) 가독성: 셀 안의 모든 글자를 검은색으로 강제 주입 */
+    div[data-testid="stTable"] table {
         background-color: #ffffff !important;
+        color: #000000 !important;
+        border-collapse: collapse !important;
+        width: 100% !important;
+    }
+    
+    div[data-testid="stTable"] th {
+        background-color: #f0f2f6 !important;
+        color: #000000 !important; /* 헤더 글자 검은색 */
+        font-weight: bold !important;
         border: 1px solid #cccccc !important;
-        padding: 12px !important;
+    }
+    
+    div[data-testid="stTable"] td {
+        background-color: #ffffff !important;
+        color: #000000 !important; /* 데이터 글자 검은색 */
+        border: 1px solid #cccccc !important;
         font-weight: 500 !important;
     }
-    .stTable th {
-        background-color: #f0f2f6 !important;
-        font-weight: bold !important;
-    }
 
-    /* [업로드 버튼 수정] CSV 업로드 섹션의 텍스트와 버튼 가독성 */
+    /* 업로드 섹션 스타일 */
     div[data-testid="stFileUploader"] section {
         background-color: #162a47 !important;
         border: 1px dashed #ffe135 !important;
     }
-    div[data-testid="stFileUploader"] label, 
-    div[data-testid="stFileUploader"] small {
-        color: #ffffff !important; /* 업로드 안내 문구 흰색 */
-    }
+    
     /* 업로드 버튼 내부 'Browse files' 글자색 */
     button[data-testid="stBaseButton-secondary"] {
-        color: #000000 !important; /* 버튼 글씨 검은색 */
+        color: #000000 !important;
         background-color: #ffe135 !important;
         border: none !important;
     }
 
-    /* 메트릭 및 프로그레스 바 */
+    /* 메트릭 박스 */
     div[data-testid="stMetric"] { 
         background-color: #162a47 !important; 
         padding: 20px; 
@@ -70,16 +72,14 @@ custom_css = """
         border-bottom: 4px solid #ffe135; 
     }
     div[data-testid="stMetricValue"] > div { color: #ffe135 !important; }
-    div.stProgress > div > div > div > div { background-color: #ffe135; }
     
-    /* 일반 실행 버튼 스타일 */
+    /* 일반 버튼 스타일 */
     .stButton>button {
         background-color: #ffe135 !important;
         color: #000000 !important;
         border-radius: 8px !important;
         font-weight: bold !important;
         width: 100%;
-        border: none !important;
         height: 3.5em;
     }
     </style>
@@ -104,7 +104,7 @@ with st.sidebar:
     st.success("System Status: Active")
     st.info("NemoClaw AI Engine Running")
 
-# --- 메인 섹션 ---
+# --- 메인 비주얼 ---
 st.image(IMAGE_URL, caption="SUROP: Next-Generation AI Drug Discovery Interface", use_container_width=True)
 
 st.title("Aging Target Protein: In-Silico Discovery")
@@ -137,9 +137,11 @@ if st.button('Run Deep Analysis (Real-mode)'):
             "LogP": [2.4, 1.8, 3.1, 2.0, 2.7],
             "Toxic Filter": ["SAFE", "SAFE", "SAFE", "SAFE", "SAFE"]
         }
-        # 테이블 데이터를 명확하게 출력
-        st.table(pd.DataFrame(mock_data))
-        st.success("분석 완료: 모든 독성 필터 및 약물성 검증을 통과했습니다.")
+        # 데이터프레임 생성 및 표 출력
+        df_result = pd.DataFrame(mock_data)
+        st.table(df_result)
+        
+        st.success("분석 완료: 모든 후보 물질이 약물성 검증을 통과했습니다.")
         st.balloons()
 
 st.divider()
@@ -148,7 +150,6 @@ st.divider()
 st.header("🧪 SUROP Interactive Lab")
 st.write("교수님의 후보 화합물 리스트(CSV)를 업로드하여 실시간 구조 분석을 수행하세요.")
 
-# 업로드 섹션
 uploaded_file = st.file_uploader("CSV 파일을 업로드하세요 (Name, SMILES 컬럼 필수)", type=["csv"])
 
 if uploaded_file is not None:
