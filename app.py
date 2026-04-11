@@ -166,4 +166,4 @@ elif app_mode == "🧪 설계형 모드 (AI Design)":
 
 # 하단 연락처
 st.divider()
-st.info("📫 Contact: misatech@surop.com | 서울대학교 이준호 교수님 연구팀 전용 채널")
+st.info("📫 Contact: bslee@yahoo.com | MisaTech AI")
