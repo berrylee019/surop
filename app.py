@@ -21,7 +21,7 @@ st.set_page_config(
 # [이미지 주소]
 IMAGE_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgWi2G3PZ2y0MSNuxEQ3xTFfp6WnVQ7uLnPUQaSNE5a_PPsFvCgL_xALuvusjUo3OV-S4MddYAQWxMxsob9EpNujqwh9cXBP09bxZSS_O2y42zW668O7fPgD_fPVMkqWnx1p5n2KkA1nrZR3zUgvUp0ZE59yinMWEJRrLNIALGQm2Uq10gvAD9KDgg3Rpk/s1168/surop.jpg"
 
-# 2. 커스텀 CSS (사이드바 가독성 & 가시성 보정)
+# 2. 커스텀 CSS (표 가독성 및 탭 배경 문제 해결)
 custom_css = """
     <style>
     .stApp { background-color: #0c1a2e !important; }
@@ -32,10 +32,28 @@ custom_css = """
     section[data-testid="stSidebar"] * { color: #0c1a2e !important; }
     section[data-testid="stSidebar"] h1 { font-weight: 800 !important; }
     
-    /* 표 스타일 */
-    div[data-testid="stTable"] { background-color: #ffffff !important; border-radius: 10px !important; padding: 5px !important; }
-    div[data-testid="stTable"] table { color: #000000 !important; }
-    div[data-testid="stTable"] td, div[data-testid="stTable"] th { color: #000000 !important; background-color: #ffffff !important; }
+    /* [수정] 표(Table) 가독성: 배경은 어둡게, 글자는 흰색으로 강제 고정 */
+    div[data-testid="stTable"] { 
+        background-color: #1e293b !important; 
+        border-radius: 10px !important; 
+        padding: 10px !important; 
+    }
+    div[data-testid="stTable"] table { color: #ffffff !important; }
+    div[data-testid="stTable"] td, div[data-testid="stTable"] th { 
+        color: #ffffff !important; 
+        background-color: #1e293b !important; 
+        border-bottom: 1px solid #334155 !important;
+    }
+
+    /* [수정] 셀렉트박스 및 입력창 배경 가독성 (설계형 모드 포함) */
+    div[data-baseweb="select"] > div {
+        background-color: #1e293b !important;
+        color: white !important;
+    }
+    div[role="listbox"] {
+        background-color: #1e293b !important;
+        color: white !important;
+    }
 
     /* 버튼 스타일 */
     .stButton>button {
@@ -113,6 +131,7 @@ elif app_mode == "🔍 분석형 모드 (Analysis)":
                 "Affinity": [-12.42, -11.95, -11.51],
                 "Toxic Filter": ["SAFE", "SAFE", "SAFE"]
             }
+            # 표 가독성을 위해 스타일링된 데이터프레임 출력
             st.table(pd.DataFrame(mock_data))
             st.balloons()
 
@@ -131,10 +150,13 @@ elif app_mode == "🧪 설계형 모드 (AI Design)":
         })
         fig = px.scatter(chart_data, x="Bacterial-Affinity", y="Mito-Affinity", text="Compound", 
                          title="Mito vs Bacteria Selectivity (Ideal: Left-Top)")
+        # 차트 배경색을 위해 템플릿 조정
+        fig.update_layout(template="plotly_dark")
         st.plotly_chart(fig, use_container_width=True)
 
     # 설계형 핵심 기능: 분자 조각 조합
     st.subheader("2. AI Fragment Assembly")
+    # [수정] 사이드바 이외의 입력창에서도 글자가 잘 보이도록 설정됨
     scaffold = st.selectbox("Base Scaffold", ["Benzene", "Indole", "Pyridine"])
     if st.button("Design New Molecule"):
         img = render_molecule("C1=CC(=C(C=C1)O)O")
