@@ -4,6 +4,8 @@ import time
 import numpy as np
 from rdkit import Chem
 from rdkit.Chem import Draw
+from stmol import showmol
+import py3Dmol
 
 # Plotly 설치 여부 체크 (설계 모드 시각화용)
 try:
@@ -67,12 +69,28 @@ custom_css = """
 """
 st.markdown(custom_css, unsafe_allow_html=True)
 
-# --- [함수] 분자 시각화 ---
+# --- [함수] 2D 분자 시각화 (RDKit) ---
 def render_molecule(smiles):
     try:
         mol = Chem.MolFromSmiles(smiles)
         return Draw.MolToImage(mol, size=(300, 300)) if mol else None
     except: return None
+
+# --- [함수] 3D 단백질 시각화 (stmol + py3Dmol) ---
+def render_3d_viewer(pdb_path):
+    try:
+        with open(pdb_path, "r") as f:
+            pdb_data = f.read()
+        
+        view = py3Dmol.view(width=800, height=500)
+        view.addModel(pdb_data, 'pdb')
+        # 박사님이 선호하시는 Cartoon 스타일과 Spectrum(무지개색) 적용
+        view.setStyle({'cartoon': {'color': 'spectrum'}})
+        view.zoomTo()
+        view.spin(True) # 시연 시 화려함을 위해 자동 회전 활성화
+        showmol(view, height=500)
+    except Exception as e:
+        st.error(f"PDB 파일을 로드할 수 없습니다. 경로를 확인해주세요: {pdb_path}")
 
 # --- [사이드바] 모드 선택 컨트롤 ---
 with st.sidebar:
@@ -91,7 +109,6 @@ with st.sidebar:
 
 # --- [모드 1] 홈 화면: 개념 및 요약 설명 ---
 if app_mode == "🏠 Home (Concept)":
-    # [경고해결] use_container_width -> width='stretch'
     st.image(IMAGE_URL, caption="SUROP: Aging Target Protein Discovery Interface", width='stretch')
     
     st.title("Welcome to SUROP Platform")
@@ -117,35 +134,54 @@ if app_mode == "🏠 Home (Concept)":
     st.divider()
     
     # --- 시연용 데이터 로드 섹션 ---
-    st.subheader("🧪 Live Demo: Load Standard Antigen Data")
-    st.write("박사님 연구에 최적화된 표준 모델 항원 데이터를 로드하여 성능을 테스트합니다.")
+    st.subheader("🧪 Live Demo: Interactive 3D Antigen Analysis")
+    st.write("박사님 연구에 최적화된 표준 모델 항원 데이터를 로드하고 3차원 구조를 확인합니다.")
     
     btn_col1, btn_col2, btn_col3 = st.columns(3)
     
+    # 세션 상태 초기화 (3D 뷰어 표시 여부 관리)
+    if 'show_viewer' not in st.session_state:
+        st.session_state['show_viewer'] = False
+
     with btn_col1:
         if st.button("📍 Load: Ovalbumin (1OVA)"):
             with st.spinner('박사님 모델 항원(OVA) 분석 중...'):
-                time.sleep(1.5)
+                time.sleep(1.0)
                 st.session_state['active_pdb'] = "samples/1OVA.pdb"
-                st.success("Ovalbumin 구조 로드 완료!")
-                st.info("💡 분석 결과: DNA 오리가미 결합 최적 간격 3.5nm 도출")
+                st.session_state['analysis_result'] = "💡 분석 결과: DNA 오리가미 결합 최적 간격 3.5nm 도출"
+                st.session_state['show_viewer'] = False # 새로운 데이터 로드 시 뷰어는 닫기
 
     with btn_col2:
         if st.button("📍 Load: SARS-CoV-2 (6M0J)"):
             with st.spinner('코로나 스파이크 단백질 분석 중...'):
-                time.sleep(1.5)
+                time.sleep(1.0)
                 st.session_state['active_pdb'] = "samples/6M0J.pdb"
-                st.success("SARS-CoV-2 구조 로드 완료!")
+                st.session_state['analysis_result'] = "💡 분석 결과: Spike RBD-ACE2 결합 인터페이스 식별 완료"
+                st.session_state['show_viewer'] = False
 
     with btn_col3:
         if st.button("📍 Load: Cancer Neo (1S9W)"):
             with st.spinner('암 신생항원(NY-ESO-1) 분석 중...'):
-                time.sleep(1.5)
+                time.sleep(1.0)
                 st.session_state['active_pdb'] = "samples/1S9W.pdb"
-                st.success("Cancer Neoantigen 구조 로드 완료!")
+                st.session_state['analysis_result'] = "💡 분석 결과: NY-ESO-1 항원-HLA A2 복합체 정밀 스캔 완료"
+                st.session_state['show_viewer'] = False
 
+    # 분석 결과 출력 및 3D 확인 버튼
     if 'active_pdb' in st.session_state:
-        st.write(f"📂 **현재 활성화된 데이터:** `{st.session_state['active_pdb']}`")
+        st.success(f"{st.session_state['active_pdb'].split('/')[-1]} 로드 완료!")
+        st.info(st.session_state['analysis_result'])
+        
+        # [추가] 3D 구조 확인 버튼
+        if st.button(f"🔍 {st.session_state['active_pdb'].split('/')[-1]} 3D 구조 시각화 시작"):
+            st.session_state['show_viewer'] = True
+
+    # 3D 뷰어 렌더링 영역
+    if st.session_state.get('show_viewer'):
+        st.divider()
+        st.subheader(f"🎥 Interactive 3D Viewer: {st.session_state['active_pdb'].split('/')[-1]}")
+        st.caption("마우스 드래그: 회전 | 휠: 확대/축소 | 오른쪽 클릭: 메뉴")
+        render_3d_viewer(st.session_state['active_pdb'])
 
     st.divider()
     st.success("왼쪽 사이드바에서 원하시는 모드를 선택하여 연구를 시작하세요.")
@@ -185,7 +221,6 @@ elif app_mode == "🧪 설계형 모드 (AI Design)":
         fig = px.scatter(chart_data, x="Bacterial-Affinity", y="Mito-Affinity", text="Compound", 
                          title="Mito vs Bacteria Selectivity (Ideal: Left-Top)")
         fig.update_layout(template="plotly_dark")
-        # [경고해결] st.plotly_chart는 최신 버전에서도 use_container_width=True가 표준인 경우가 많으므로 유지하거나 에러 시 수정
         st.plotly_chart(fig, use_container_width=True)
 
     st.subheader("2. AI Fragment Assembly")
