@@ -86,7 +86,7 @@ def render_3d_viewer(pdb_path):
         view.addModel(pdb_data, 'pdb')
         # 박사님이 선호하시는 Cartoon 스타일과 Spectrum(무지개색) 적용
         view.setStyle({'cartoon': {'color': 'spectrum'}})
-        view.zoomTo()
+        view.zoomTo({'centered': True})
         view.spin(True) # 시연 시 화려함을 위해 자동 회전 활성화
         showmol(view, height=500)
     except Exception as e:
