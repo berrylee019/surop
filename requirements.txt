@@ -3,3 +3,5 @@ pandas
 numpy
 rdkit
 plotly
+stmol
+py3Dmol
