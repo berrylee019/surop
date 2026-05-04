@@ -27,12 +27,12 @@ custom_css = """
     .stApp { background-color: #0c1a2e !important; }
     h1, h2, h3, h4, p, li, span, label, .stMarkdown { color: #ffffff !important; }
 
-    /* [해결] 사이드바 가독성 고정 */
+    /* 사이드바 가독성 고정 */
     section[data-testid="stSidebar"] { background-color: #f1f3f5 !important; }
     section[data-testid="stSidebar"] * { color: #0c1a2e !important; }
     section[data-testid="stSidebar"] h1 { font-weight: 800 !important; }
     
-    /* [수정] 표(Table) 가독성: 배경은 어둡게, 글자는 흰색으로 강제 고정 */
+    /* 표(Table) 가독성 */
     div[data-testid="stTable"] { 
         background-color: #1e293b !important; 
         border-radius: 10px !important; 
@@ -45,7 +45,7 @@ custom_css = """
         border-bottom: 1px solid #334155 !important;
     }
 
-    /* [수정] 셀렉트박스 및 입력창 배경 가독성 (설계형 모드 포함) */
+    /* 셀렉트박스 및 입력창 배경 가독성 */
     div[data-baseweb="select"] > div {
         background-color: #1e293b !important;
         color: white !important;
@@ -91,7 +91,8 @@ with st.sidebar:
 
 # --- [모드 1] 홈 화면: 개념 및 요약 설명 ---
 if app_mode == "🏠 Home (Concept)":
-    st.image(IMAGE_URL, caption="SUROP: Aging Target Protein Discovery Interface", use_container_width=True)
+    # [경고해결] use_container_width -> width='stretch'
+    st.image(IMAGE_URL, caption="SUROP: Aging Target Protein Discovery Interface", width='stretch')
     
     st.title("Welcome to SUROP Platform")
     st.header("Superior Universal Receptor Optimization Platform")
@@ -115,7 +116,7 @@ if app_mode == "🏠 Home (Concept)":
         
     st.divider()
     
-    # --- [추가] 시연용 데이터 로드 섹션 ---
+    # --- 시연용 데이터 로드 섹션 ---
     st.subheader("🧪 Live Demo: Load Standard Antigen Data")
     st.write("박사님 연구에 최적화된 표준 모델 항원 데이터를 로드하여 성능을 테스트합니다.")
     
@@ -154,7 +155,6 @@ elif app_mode == "🔍 분석형 모드 (Analysis)":
     st.title("🔍 Target Protein Analysis Mode")
     st.write("대규모 라이브러리를 스캔하여 표적 단백질에 최적화된 화합물을 식별합니다.")
     
-    # 만약 홈에서 로드된 데이터가 있다면 해당 ID를 기본값으로 사용
     default_id = "1OVA" if st.session_state.get('active_pdb') == "samples/1OVA.pdb" else "1UNL"
     target_pdb = st.text_input("분석할 PDB ID 입력", default_id)
     
@@ -173,7 +173,7 @@ elif app_mode == "🔍 분석형 모드 (Analysis)":
 # --- [모드 3] 설계형 모드 ---
 elif app_mode == "🧪 설계형 모드 (AI Design)":
     st.title("🧪 AI-Driven Molecular Design Mode")
-    st.write("이준호 교수님의 가이드에 따라 비항생제성 미토콘드리아 표적 화합물을 정밀 설계합니다.")
+    st.write("비항생제성 미토콘드리아 표적 화합물을 정밀 설계합니다.")
     
     if px:
         st.subheader("1. Target Selectivity Verification")
@@ -185,6 +185,7 @@ elif app_mode == "🧪 설계형 모드 (AI Design)":
         fig = px.scatter(chart_data, x="Bacterial-Affinity", y="Mito-Affinity", text="Compound", 
                          title="Mito vs Bacteria Selectivity (Ideal: Left-Top)")
         fig.update_layout(template="plotly_dark")
+        # [경고해결] st.plotly_chart는 최신 버전에서도 use_container_width=True가 표준인 경우가 많으므로 유지하거나 에러 시 수정
         st.plotly_chart(fig, use_container_width=True)
 
     st.subheader("2. AI Fragment Assembly")
