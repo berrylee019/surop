@@ -61,6 +61,7 @@ custom_css = """
         color: #000000 !important;
         font-weight: bold !important;
         border-radius: 8px !important;
+        width: 100% !important;
     }
     </style>
 """
@@ -79,7 +80,6 @@ with st.sidebar:
     st.write("**S**uperior **U**niversal **R**eceptor **O**ptimization **P**latform")
     st.divider()
     
-    # 분석형 vs 설계형 선택 라디오 버튼
     app_mode = st.radio(
         "실행 모드를 선택하세요",
         ["🏠 Home (Concept)", "🔍 분석형 모드 (Analysis)", "🧪 설계형 모드 (AI Design)"]
@@ -100,19 +100,52 @@ if app_mode == "🏠 Home (Concept)":
     with col_l:
         st.subheader("📌 핵심 개념 (Concept)")
         st.write("""
-        **이준호 교수 가이드 핵심:**
-        1. **항생제 기능 배제**: 미생물 총(Microbiome)을 파괴하지 않는 비항생제성 설계.
-        2. **미토콘드리아 정밀 타겟팅**: 노화의 핵심인 미토콘드리아 내 표적 효소에만 정확히 결합.
-        3. **활성산소(ROS) 억제**: 정밀 설계된 분자 구조를 통해 노화 관련 산화 스트레스 감소.
+        **핵심 기술 가이드:**
+        1. **DNA 오리가미 최적화**: 항원과 면역증강제의 정밀 배치를 통한 면역 효율 극대화.
+        2. **개인 맞춤형 항원 발굴**: 비용과 시간을 획기적으로 단축하는 가상 스크리닝(In-silico).
+        3. **미토콘드리아 정밀 타겟팅**: 노화의 핵심 원인인 산화 스트레스 제어 및 ROS 억제.
         """)
     
     with col_r:
         st.subheader("📋 서비스 요약 (Summary)")
         st.write("""
         - **분석형 모드**: 대규모 라이브러리 스캔을 통한 최적 결합 후보 물질 발굴 및 검증.
-        - **설계형 모드**: AI를 이용한 분자 조각(Fragment) 조합 및 타겟 선택성(Selectivity) 정밀 디자인.
+        - **설계형 모드**: AI를 이용한 분자 조각 조합 및 타겟 선택성 정밀 디자인.
         """)
         
+    st.divider()
+    
+    # --- [추가] 시연용 데이터 로드 섹션 ---
+    st.subheader("🧪 Live Demo: Load Standard Antigen Data")
+    st.write("박사님 연구에 최적화된 표준 모델 항원 데이터를 로드하여 성능을 테스트합니다.")
+    
+    btn_col1, btn_col2, btn_col3 = st.columns(3)
+    
+    with btn_col1:
+        if st.button("📍 Load: Ovalbumin (1OVA)"):
+            with st.spinner('박사님 모델 항원(OVA) 분석 중...'):
+                time.sleep(1.5)
+                st.session_state['active_pdb'] = "samples/1OVA.pdb"
+                st.success("Ovalbumin 구조 로드 완료!")
+                st.info("💡 분석 결과: DNA 오리가미 결합 최적 간격 3.5nm 도출")
+
+    with btn_col2:
+        if st.button("📍 Load: SARS-CoV-2 (6M0J)"):
+            with st.spinner('코로나 스파이크 단백질 분석 중...'):
+                time.sleep(1.5)
+                st.session_state['active_pdb'] = "samples/6M0J.pdb"
+                st.success("SARS-CoV-2 구조 로드 완료!")
+
+    with btn_col3:
+        if st.button("📍 Load: Cancer Neo (1S9W)"):
+            with st.spinner('암 신생항원(NY-ESO-1) 분석 중...'):
+                time.sleep(1.5)
+                st.session_state['active_pdb'] = "samples/1S9W.pdb"
+                st.success("Cancer Neoantigen 구조 로드 완료!")
+
+    if 'active_pdb' in st.session_state:
+        st.write(f"📂 **현재 활성화된 데이터:** `{st.session_state['active_pdb']}`")
+
     st.divider()
     st.success("왼쪽 사이드바에서 원하시는 모드를 선택하여 연구를 시작하세요.")
 
@@ -121,7 +154,10 @@ elif app_mode == "🔍 분석형 모드 (Analysis)":
     st.title("🔍 Target Protein Analysis Mode")
     st.write("대규모 라이브러리를 스캔하여 표적 단백질에 최적화된 화합물을 식별합니다.")
     
-    target_pdb = st.text_input("분석할 PDB ID 입력", "1UNL")
+    # 만약 홈에서 로드된 데이터가 있다면 해당 ID를 기본값으로 사용
+    default_id = "1OVA" if st.session_state.get('active_pdb') == "samples/1OVA.pdb" else "1UNL"
+    target_pdb = st.text_input("분석할 PDB ID 입력", default_id)
+    
     if st.button("Run Deep Analysis"):
         with st.spinner('Analyzing...'):
             time.sleep(1.2)
@@ -131,7 +167,6 @@ elif app_mode == "🔍 분석형 모드 (Analysis)":
                 "Affinity": [-12.42, -11.95, -11.51],
                 "Toxic Filter": ["SAFE", "SAFE", "SAFE"]
             }
-            # 표 가독성을 위해 스타일링된 데이터프레임 출력
             st.table(pd.DataFrame(mock_data))
             st.balloons()
 
@@ -140,7 +175,6 @@ elif app_mode == "🧪 설계형 모드 (AI Design)":
     st.title("🧪 AI-Driven Molecular Design Mode")
     st.write("이준호 교수님의 가이드에 따라 비항생제성 미토콘드리아 표적 화합물을 정밀 설계합니다.")
     
-    # 설계형 핵심 기능: 선택성 맵
     if px:
         st.subheader("1. Target Selectivity Verification")
         chart_data = pd.DataFrame({
@@ -150,13 +184,10 @@ elif app_mode == "🧪 설계형 모드 (AI Design)":
         })
         fig = px.scatter(chart_data, x="Bacterial-Affinity", y="Mito-Affinity", text="Compound", 
                          title="Mito vs Bacteria Selectivity (Ideal: Left-Top)")
-        # 차트 배경색을 위해 템플릿 조정
         fig.update_layout(template="plotly_dark")
         st.plotly_chart(fig, use_container_width=True)
 
-    # 설계형 핵심 기능: 분자 조각 조합
     st.subheader("2. AI Fragment Assembly")
-    # [수정] 사이드바 이외의 입력창에서도 글자가 잘 보이도록 설정됨
     scaffold = st.selectbox("Base Scaffold", ["Benzene", "Indole", "Pyridine"])
     if st.button("Design New Molecule"):
         img = render_molecule("C1=CC(=C(C=C1)O)O")
