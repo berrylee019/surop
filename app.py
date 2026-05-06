@@ -172,6 +172,11 @@ if app_mode == "🏠 Home (Concept)":
         st.success(f"{st.session_state['active_pdb'].split('/')[-1]} 로드 완료!")
         st.info(st.session_state['analysis_result'])
         
+        # --- [추가] DoriVac 연동용 보안 데이터 패킷 다운로드 버튼 (3줄) ---
+        import json
+        packet = {"antigen_name": st.session_state['active_pdb'].split('/')[-1].replace('.pdb', ''), "optimized_spacing_nm": 3.5 if "1OVA" in st.session_state['active_pdb'] else 0.0, "target_system": "DoriVac Scaffold", "security_token": "SUROP-SECURE-99X82"}
+        st.download_button(label="📥 DoriVac 연동 패킷 다운로드 (JSON)", data=json.dumps(packet, indent=2), file_name=f"{st.session_state['active_pdb'].split('/')[-1].replace('.pdb', '')}_surop_packet.json", mime="application/json")
+        
         # [추가] 3D 구조 확인 버튼
         if st.button(f"🔍 {st.session_state['active_pdb'].split('/')[-1]} 3D 구조 시각화 시작"):
             st.session_state['show_viewer'] = True
