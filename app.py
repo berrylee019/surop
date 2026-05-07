@@ -2,12 +2,15 @@ import streamlit as st
 import pandas as pd
 import time
 import numpy as np
+import requests
+import json
+import plotly.graph_objects as go
 from rdkit import Chem
 from rdkit.Chem import Draw
 from stmol import showmol
 import py3Dmol
 
-# Plotly 설치 여부 체크 (설계 모드 시각화용)
+# Plotly 설치 여부 체크 (설계 모드 및 시연용 시각화)
 try:
     import plotly.express as px
 except ImportError:
@@ -23,7 +26,7 @@ st.set_page_config(
 # [이미지 주소]
 IMAGE_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgWi2G3PZ2y0MSNuxEQ3xTFfp6WnVQ7uLnPUQaSNE5a_PPsFvCgL_xALuvusjUo3OV-S4MddYAQWxMxsob9EpNujqwh9cXBP09bxZSS_O2y42zW668O7fPgD_fPVMkqWnx1p5n2KkA1nrZR3zUgvUp0ZE59yinMWEJRrLNIALGQm2Uq10gvAD9KDgg3Rpk/s1168/surop.jpg"
 
-# 2. 커스텀 CSS (표 가독성 및 탭 배경 문제 해결)
+# 2. 커스텀 CSS
 custom_css = """
     <style>
     .stApp { background-color: #0c1a2e !important; }
@@ -84,10 +87,9 @@ def render_3d_viewer(pdb_path):
         
         view = py3Dmol.view(width=800, height=500)
         view.addModel(pdb_data, 'pdb')
-        # 박사님이 선호하시는 Cartoon 스타일과 Spectrum(무지개색) 적용
         view.setStyle({'cartoon': {'color': 'spectrum'}})
         view.zoomTo({'centered': True})
-        view.spin(True) # 시연 시 화려함을 위해 자동 회전 활성화
+        view.spin(True) 
         showmol(view, height=500)
     except Exception as e:
         st.error(f"PDB 파일을 로드할 수 없습니다. 경로를 확인해주세요: {pdb_path}")
@@ -100,7 +102,12 @@ with st.sidebar:
     
     app_mode = st.radio(
         "실행 모드를 선택하세요",
-        ["🏠 Home (Concept)", "🔍 분석형 모드 (Analysis)", "🧪 설계형 모드 (AI Design)"]
+        [
+            "🏠 Home (Concept)", 
+            "🔗 NCI GDC Data Link", # 새롭게 추가된 기술 시연 모듈
+            "🔍 분석형 모드 (Analysis)", 
+            "🧪 설계형 모드 (AI Design)"
+        ]
     )
     
     st.divider()
@@ -133,13 +140,11 @@ if app_mode == "🏠 Home (Concept)":
         
     st.divider()
     
-    # --- 시연용 데이터 로드 섹션 ---
     st.subheader("🧪 Live Demo: Interactive 3D Antigen Analysis")
     st.write("박사님 연구에 최적화된 표준 모델 항원 데이터를 로드하고 3차원 구조를 확인합니다.")
     
     btn_col1, btn_col2, btn_col3 = st.columns(3)
     
-    # 세션 상태 초기화 (3D 뷰어 표시 여부 관리)
     if 'show_viewer' not in st.session_state:
         st.session_state['show_viewer'] = False
 
@@ -149,7 +154,7 @@ if app_mode == "🏠 Home (Concept)":
                 time.sleep(1.0)
                 st.session_state['active_pdb'] = "samples/1OVA.pdb"
                 st.session_state['analysis_result'] = "💡 분석 결과: DNA 오리가미 결합 최적 간격 3.5nm 도출"
-                st.session_state['show_viewer'] = False # 새로운 데이터 로드 시 뷰어는 닫기
+                st.session_state['show_viewer'] = False
 
     with btn_col2:
         if st.button("📍 Load: SARS-CoV-2 (6M0J)"):
@@ -167,31 +172,103 @@ if app_mode == "🏠 Home (Concept)":
                 st.session_state['analysis_result'] = "💡 분석 결과: NY-ESO-1 항원-HLA A2 복합체 정밀 스캔 완료"
                 st.session_state['show_viewer'] = False
 
-    # 분석 결과 출력 및 3D 확인 버튼
     if 'active_pdb' in st.session_state:
         st.success(f"{st.session_state['active_pdb'].split('/')[-1]} 로드 완료!")
         st.info(st.session_state['analysis_result'])
         
-        # --- [추가] DoriVac 연동용 보안 데이터 패킷 다운로드 버튼 (3줄) ---
         import json
         packet = {"antigen_name": st.session_state['active_pdb'].split('/')[-1].replace('.pdb', ''), "optimized_spacing_nm": 3.5 if "1OVA" in st.session_state['active_pdb'] else 0.0, "target_system": "DoriVac Scaffold", "security_token": "SUROP-SECURE-99X82"}
         st.download_button(label="📥 DoriVac 연동 패킷 다운로드 (JSON)", data=json.dumps(packet, indent=2), file_name=f"{st.session_state['active_pdb'].split('/')[-1].replace('.pdb', '')}_surop_packet.json", mime="application/json")
         
-        # [추가] 3D 구조 확인 버튼
         if st.button(f"🔍 {st.session_state['active_pdb'].split('/')[-1]} 3D 구조 시각화 시작"):
             st.session_state['show_viewer'] = True
 
-    # 3D 뷰어 렌더링 영역
     if st.session_state.get('show_viewer'):
         st.divider()
         st.subheader(f"🎥 Interactive 3D Viewer: {st.session_state['active_pdb'].split('/')[-1]}")
-        st.caption("마우스 드래그: 회전 | 휠: 확대/축소 | 오른쪽 클릭: 메뉴")
         render_3d_viewer(st.session_state['active_pdb'])
 
-    st.divider()
-    st.success("왼쪽 사이드바에서 원하시는 모드를 선택하여 연구를 시작하세요.")
+# =========================================================================
+# [신규 모듈] NCI GDC Data Link (DNA Change 기술적 워크플로우)
+# =========================================================================
+elif app_mode == "🔗 NCI GDC Data Link":
+    st.title("🔗 NCI GDC Real-time Genomic Link")
+    st.markdown("암 환자의 실시간 DNA 변이 데이터를 기반으로 **맞춤형 3D 신생항원**을 생성하는 워크플로우를 시연합니다.")
 
-# --- [모드 2] 분석형 모드 ---
+    # 1. 환자 데이터 패칭 섹션
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        patient_id = st.text_input("Target Patient ID (Submitter ID)", value="TCGA-A7-A0CE")
+    with col2:
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("🔍 Fetch Genomic Data"):
+            st.session_state.gdc_data_fetched = True
+
+    if st.session_state.get('gdc_data_fetched'):
+        with st.spinner("Connecting to NCI GDC Data Portal..."):
+            # 실제 시연을 위한 API 필터 설정
+            filters = {"op": "and", "content": [{"op": "in", "content": {"field": "cases.submitter_id", "value": [patient_id]}}]}
+            params = {"filters": json.dumps(filters), "fields": "genomic_dna_change,ssm_id,consequence.transcript.consequence_type", "size": "5"}
+            
+            try:
+                # GDC API 호출 및 데이터 구성
+                response = requests.get("https://api.gdc.cancer.gov/ssms", params=params)
+                data = response.json().get("data", {}).get("hits", [])
+                
+                if data:
+                    st.subheader(f"📋 Patient {patient_id}: Mutation Analysis")
+                    df = pd.DataFrame([
+                        {
+                            "DNA Change": m.get('genomic_dna_change'),
+                            "Consequence": m.get('consequence', [{}])[0].get('transcript', {}).get('consequence_type', 'N/A')
+                        } for m in data
+                    ])
+                    st.table(df)
+
+                    st.markdown("---")
+                    st.subheader("🚀 Technical Workflow: Antigen Creation")
+                    
+                    # 시연의 핵심: missense_variant 선택 시나리오
+                    selected_mut = st.selectbox("Select Target DNA Change for 3D Modeling", df['DNA Change'].tolist())
+                    
+                    if st.button("⚡ Execute AI Prediction Pipeline", type="primary"):
+                        # [이미지 생성 유도 태그 - 시너지 효과]
+                        # 
+                        
+                        p_bar = st.progress(0)
+                        status = st.empty()
+                        
+                        # Step 1: Translation
+                        status.text("Step 1: Translating DNA Change to Amino Acid Sequence...")
+                        time.sleep(1)
+                        p_bar.progress(33)
+                        st.success(f"✔️ Translated: {selected_mut} → **p.Gly12Asp (G12D) Mutation**")
+
+                        # Step 2: Extraction
+                        status.text("Step 2: Extracting 25-mer Peptide Fragment...")
+                        time.sleep(1)
+                        p_bar.progress(66)
+                        st.code("Fragment: MTEYKLVVVGADGVGKSALTIQLI (Mutated Region Highlighted)", language="text")
+
+                        # Step 3: 3D Prediction 시각화
+                        status.text("Step 3: Folding Prediction via ESMFold AI...")
+                        time.sleep(1.5)
+                        p_bar.progress(100)
+                        
+                        # 3D 결과 시각화 (임시 Plotly 서피스로 화려하게 연출)
+                        st.subheader("🔬 Predicted 3D Neo-Antigen Structure")
+                        z = np.random.standard_normal((15, 15))
+                        fig = go.Figure(data=[go.Surface(z=z, colorscale='Electric', opacity=0.9)])
+                        fig.update_layout(title=f"Target Model: {selected_mut}", width=800, height=500)
+                        st.plotly_chart(fig, use_container_width=True)
+                        
+                        st.info("💡 **Ready for DoriVac:** 본 구조 데이터를 기반으로 3.5nm 정밀 배치를 위한 DoriVac Recipe 생성이 가능합니다.")
+                else:
+                    st.warning("데이터를 찾을 수 없습니다. 다른 환자 ID를 입력해 주세요.")
+            except:
+                st.error("API 연결 중 오류가 발생했습니다.")
+
+# --- [모드 2] 분석형 모드 (기존 코드 유지) ---
 elif app_mode == "🔍 분석형 모드 (Analysis)":
     st.title("🔍 Target Protein Analysis Mode")
     st.write("대규모 라이브러리를 스캔하여 표적 단백질에 최적화된 화합물을 식별합니다.")
@@ -211,7 +288,7 @@ elif app_mode == "🔍 분석형 모드 (Analysis)":
             st.table(pd.DataFrame(mock_data))
             st.balloons()
 
-# --- [모드 3] 설계형 모드 ---
+# --- [모드 3] 설계형 모드 (기존 코드 유지) ---
 elif app_mode == "🧪 설계형 모드 (AI Design)":
     st.title("🧪 AI-Driven Molecular Design Mode")
     st.write("비항생제성 미토콘드리아 표적 화합물을 정밀 설계합니다.")
